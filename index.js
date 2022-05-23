@@ -24,6 +24,24 @@ async function run() {
     const orderCollection = client.db("toolsManager").collection("orders");
     const userCollection = client.db("toolsManager").collection("users");
 
+    // PUT Api for unique user and JWT toknassign for each users:--
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      const token = jwt.sign(
+        { email: email },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "24h" }
+      );
+      res.send({ result, token });
+    });
+
     // GET API for finding All Products:
     app.get("/product", async (req, res) => {
       const prosucts = await productCollection.find().toArray();
@@ -43,6 +61,7 @@ async function run() {
       const result = await orderCollection.insertOne(order);
       res.send(result);
     });
+    //
   } finally {
   }
 }
