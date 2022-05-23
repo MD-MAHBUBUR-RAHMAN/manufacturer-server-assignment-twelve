@@ -21,7 +21,7 @@ async function run() {
     await client.connect();
     console.log("db connected");
     const productCollection = client.db("toolsManager").collection("products");
-    const bookingCollection = client.db("toolsManager").collection("bookings");
+    const orderCollection = client.db("toolsManager").collection("orders");
     const userCollection = client.db("toolsManager").collection("users");
 
     // GET API for finding All Products:
@@ -34,6 +34,13 @@ async function run() {
       const id = req.params.id;
       const queary = { _id: ObjectId(id) };
       const result = await productCollection.findOne(queary);
+      res.send(result);
+    });
+    // POST api for Place Purchase Order:----
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      console.log(order);
+      const result = await orderCollection.insertOne(order);
       res.send(result);
     });
   } finally {
