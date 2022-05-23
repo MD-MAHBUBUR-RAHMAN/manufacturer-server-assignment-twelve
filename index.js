@@ -4,7 +4,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // MiddleWare:-----
 app.use(cors());
 app.use(express.json());
@@ -28,6 +28,13 @@ async function run() {
     app.get("/product", async (req, res) => {
       const prosucts = await productCollection.find().toArray();
       res.send(prosucts);
+    });
+    // GET API for perticular product:
+    app.get("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const queary = { _id: ObjectId(id) };
+      const result = await productCollection.findOne(queary);
+      res.send(result);
     });
   } finally {
   }
