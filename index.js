@@ -23,6 +23,12 @@ async function run() {
     const productCollection = client.db("toolsManager").collection("products");
     const bookingCollection = client.db("toolsManager").collection("bookings");
     const userCollection = client.db("toolsManager").collection("users");
+
+    // GET API for finding All Products:
+    app.get("/product", async (req, res) => {
+      const prosucts = await productCollection.find().toArray();
+      res.send(prosucts);
+    });
   } finally {
   }
 }
