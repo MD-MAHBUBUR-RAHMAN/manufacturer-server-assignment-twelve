@@ -54,7 +54,14 @@ async function run() {
       const result = await productCollection.findOne(queary);
       res.send(result);
     });
-    // POST api for Place Purchase Order:----
+    // GET Api for peticuler users by email for UserProfile.js:----
+    app.get("/orders/:emil", async (req, res) => {
+      const email = req.params.emil;
+      const queary = { email: email };
+      const result = await orderCollection.find(queary).toArray();
+      res.send(result);
+    });
+    // POST api for Purchase.js Order:----
     app.post("/orders", async (req, res) => {
       const order = req.body;
       console.log(order);
