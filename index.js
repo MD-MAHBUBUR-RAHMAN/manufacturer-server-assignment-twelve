@@ -48,6 +48,13 @@ async function run() {
       const prosucts = await productCollection.find().toArray();
       res.send(prosucts);
     });
+    // GET API for finding All Reviews Review.js:
+    app.get("/review", async (req, res) => {
+      const prosucts = await (
+        await reviewCollection.find().toArray()
+      ).reverse();
+      res.send(prosucts);
+    });
     // GET API for perticular product:
     app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
