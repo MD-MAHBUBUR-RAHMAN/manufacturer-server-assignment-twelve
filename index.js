@@ -54,7 +54,7 @@ async function run() {
       const result = await productCollection.findOne(queary);
       res.send(result);
     });
-    // GET Api for peticuler users by email for UserProfile.js:----
+    // GET Api for peticuler users by email for MyProfile.js:----
     app.get("/orders/:emil", async (req, res) => {
       const email = req.params.emil;
       const queary = { email: email };
@@ -64,9 +64,14 @@ async function run() {
     // POST api for Purchase.js Order:----
     app.post("/orders", async (req, res) => {
       const order = req.body;
-      console.log(order);
       const result = await orderCollection.insertOne(order);
       res.send(result);
+    });
+    // POSt Api to AddProduct.js:--
+    app.post("/product", async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send({ result });
     });
     //
   } finally {
