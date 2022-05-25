@@ -23,6 +23,7 @@ async function run() {
     const productCollection = client.db("toolsManager").collection("products");
     const orderCollection = client.db("toolsManager").collection("orders");
     const userCollection = client.db("toolsManager").collection("users");
+    const reviewCollection = client.db("toolsManager").collection("reviews");
 
     // PUT Api for unique user and JWT toknassign for each users:--
     app.put("/user/:email", async (req, res) => {
@@ -73,7 +74,12 @@ async function run() {
       const result = await productCollection.insertOne(product);
       res.send({ result });
     });
-    //
+    //POSt Api to AddReview.js:--
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send({ result });
+    });
   } finally {
   }
 }
