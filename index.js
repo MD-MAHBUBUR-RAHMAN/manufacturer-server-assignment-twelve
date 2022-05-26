@@ -16,6 +16,25 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// JWT middle tier/ middle layer:
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "UnAuthorized Access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      // console.log({ err });
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    // console.log("verify user", { decoded });
+    req.decoded = decoded;
+    // console.log(req.decoded);
+    next();
+  });
+}
+
 async function run() {
   try {
     await client.connect();
@@ -42,39 +61,37 @@ async function run() {
       res.send({ result, token });
     });
     // GET API for finding All Orders ManageAllOrder.js:
-    app.get("/user", async (req, res) => {
+    app.get("/user", verifyJWT, async (req, res) => {
       const prosucts = await userCollection.find().toArray();
       res.send(prosucts);
     });
 
     // GET API for finding All Products:
-    app.get("/product", async (req, res) => {
+    app.get("/product", verifyJWT, async (req, res) => {
       const prosucts = await productCollection.find().toArray();
       res.send(prosucts);
     });
     // GET API for finding All Reviews Review.js:
-    app.get("/review", async (req, res) => {
-      const prosucts = await (
-        await reviewCollection.find().toArray()
-      ).reverse();
+    app.get("/review", verifyJWT, async (req, res) => {
+      const prosucts = await reviewCollection.find().toArray();
       res.send(prosucts);
     });
     // GET API for perticular product:
-    app.get("/product/:id", async (req, res) => {
+    app.get("/product/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const queary = { _id: ObjectId(id) };
       const result = await productCollection.findOne(queary);
       res.send(result);
     });
     // GET Api for peticuler users by email for MyProfile.js:----
-    app.get("/orders/:emil", async (req, res) => {
+    app.get("/orders/:emil", verifyJWT, async (req, res) => {
       const email = req.params.emil;
       const queary = { email: email };
       const result = await orderCollection.find(queary).toArray();
       res.send(result);
     });
     // GET API for finding All Orders ManageAllOrder.js:
-    app.get("/orders", async (req, res) => {
+    app.get("/orders", verifyJWT, async (req, res) => {
       const prosucts = await orderCollection.find().toArray();
       res.send(prosucts);
     });
@@ -109,6 +126,7 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(filter);
+      console.log(result);
       res.send(result);
     });
   } finally {
