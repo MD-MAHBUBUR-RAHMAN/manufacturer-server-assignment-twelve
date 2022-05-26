@@ -42,6 +42,11 @@ async function run() {
       );
       res.send({ result, token });
     });
+    // GET API for finding All Orders ManageAllOrder.js:
+    app.get("/user", async (req, res) => {
+      const prosucts = await userCollection.find().toArray();
+      res.send(prosucts);
+    });
 
     // GET API for finding All Products:
     app.get("/product", async (req, res) => {
@@ -68,6 +73,11 @@ async function run() {
       const queary = { email: email };
       const result = await orderCollection.find(queary).toArray();
       res.send(result);
+    });
+    // GET API for finding All Orders ManageAllOrder.js:
+    app.get("/orders", async (req, res) => {
+      const prosucts = await orderCollection.find().toArray();
+      res.send(prosucts);
     });
     // POST api for Purchase.js Order:----
     app.post("/orders", async (req, res) => {
