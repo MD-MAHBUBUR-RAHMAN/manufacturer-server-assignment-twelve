@@ -19,7 +19,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    console.log("db connected");
     const productCollection = client.db("toolsManager").collection("products");
     const orderCollection = client.db("toolsManager").collection("orders");
     const userCollection = client.db("toolsManager").collection("users");
@@ -96,6 +95,21 @@ async function run() {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
       res.send({ result });
+    });
+
+    // DELETE API FOR Perticuler Product: ManageProduct.js-------
+    app.delete("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(filter);
+      res.send(result);
+    });
+    // DELETE API FOR Perticuler Order: ManageOrder.js && MyOrder.js-------
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await orderCollection.deleteOne(filter);
+      res.send(result);
     });
   } finally {
   }
