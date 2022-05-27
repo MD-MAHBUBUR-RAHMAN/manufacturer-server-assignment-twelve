@@ -25,7 +25,7 @@ function verifyJWT(req, res, next) {
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      // console.log({ err });
+      console.log({ err });
       return res.status(403).send({ message: "Forbidden Access" });
     }
     // console.log("verify user", { decoded });
@@ -42,6 +42,19 @@ async function run() {
     const orderCollection = client.db("toolsManager").collection("orders");
     const userCollection = client.db("toolsManager").collection("users");
     const reviewCollection = client.db("toolsManager").collection("reviews");
+
+    // Middle Layer For Verify admin:===
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await userCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        next();
+      } else {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+    };
 
     // PUT Api for unique user and JWT toknassign for each users:--
     app.put("/user/:email", async (req, res) => {
@@ -60,6 +73,47 @@ async function run() {
       );
       res.send({ result, token });
     });
+
+    // PUT Api for MyProfile.js:--
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          email: user.email,
+          name: user.name,
+          address: user.location,
+          img: user.img,
+          phone: user.phone,
+          social: user.social,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+
+      res.send({ result });
+    });
+
+    //PUT API to make User Admin:--------
+    app.put("/user/admin/:email", verifyJWT, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = { $set: { role: "admin" } };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send({ result });
+    });
+    // GET api for checking Admin or NOT: useAdmin.js hooks---
+    app.get("/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      // console.log({ email });
+      const user = await userCollection.findOne({ email: email });
+      // console.log(user);
+      const isAdmin = user.role === "admin";
+
+      res.send({ admin: isAdmin });
+    });
+
     // GET API for finding All Orders ManageAllOrder.js:
     app.get("/user", verifyJWT, async (req, res) => {
       const prosucts = await userCollection.find().toArray();
@@ -67,12 +121,12 @@ async function run() {
     });
 
     // GET API for finding All Products:
-    app.get("/product", verifyJWT, async (req, res) => {
+    app.get("/product", async (req, res) => {
       const prosucts = await productCollection.find().toArray();
       res.send(prosucts);
     });
     // GET API for finding All Reviews Review.js:
-    app.get("/review", verifyJWT, async (req, res) => {
+    app.get("/review", async (req, res) => {
       const prosucts = await reviewCollection.find().toArray();
       res.send(prosucts);
     });
@@ -84,7 +138,7 @@ async function run() {
       res.send(result);
     });
     // GET Api for peticuler users by email for MyProfile.js:----
-    app.get("/orders/:emil", verifyJWT, async (req, res) => {
+    app.get("/orders/:emil", async (req, res) => {
       const email = req.params.emil;
       const queary = { email: email };
       const result = await orderCollection.find(queary).toArray();
